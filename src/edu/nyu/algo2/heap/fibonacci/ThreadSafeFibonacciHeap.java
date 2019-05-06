@@ -98,7 +98,7 @@ public class ThreadSafeFibonacciHeap<Key> implements Iterable<Key> {
      * Worst case is O(1)
      * @param key a Key
      */
-    public void insert(Key key) {
+    public synchronized void insert(Key key) {
         Node x = new Node();
         x.key = key;
         size++;
@@ -150,10 +150,10 @@ public class ThreadSafeFibonacciHeap<Key> implements Iterable<Key> {
      * @param that a Fibonacci heap
      * @return the union of the two heaps
      */
-    public ThreadSafeFibonacciHeap<Key> union(ThreadSafeFibonacciHeap<Key> that) {
+    public synchronized ThreadSafeFibonacciHeap<Key> union(ThreadSafeFibonacciHeap<Key> that) {
         this.head = meld(head, that.head);
         this.min = (greater(this.min.key, that.min.key)) ? that.min : this.min;
-        this.size = this.size+that.size;
+        this.size = this.size + that.size;
         return this;
     }
 
@@ -162,14 +162,14 @@ public class ThreadSafeFibonacciHeap<Key> implements Iterable<Key> {
      ************************************/
 
     //Compares two keys
-    private boolean greater(Key n, Key m) {
+    private synchronized boolean greater(Key n, Key m) {
         if (n == null) return false;
         if (m == null) return true;
         return comp.compare(n,m) > 0;
     }
 
     //Assuming root1 holds a greater key than root2, root2 becomes the new root
-    private void link(Node root1, Node root2) {
+    private synchronized void link(Node root1, Node root2) {
         root2.child = insert(root1, root2.child);
         root2.order++;
     }
@@ -179,7 +179,7 @@ public class ThreadSafeFibonacciHeap<Key> implements Iterable<Key> {
      ************************************/
 
     //Coalesce the roots, thus reshapes the tree
-    private void consolidate() {
+    private synchronized void consolidate() {
         table.clear();
         Node x = head;
         int maxOrder = 0;
@@ -216,7 +216,7 @@ public class ThreadSafeFibonacciHeap<Key> implements Iterable<Key> {
      ************************************/
 
     //Inserts a Node in a circular list containing head, returns a new head
-    private Node insert(Node x, Node head) {
+    private synchronized Node insert(Node x, Node head) {
         if (head == null) {
             x.prev = x;
             x.next = x;
@@ -230,7 +230,7 @@ public class ThreadSafeFibonacciHeap<Key> implements Iterable<Key> {
     }
 
     //Removes a tree from the list defined by the head pointer
-    private Node cut(Node x, Node head) {
+    private synchronized Node cut(Node x, Node head) {
         if (x.next == x) {
             x.next = null;
             x.prev = null;
@@ -247,7 +247,7 @@ public class ThreadSafeFibonacciHeap<Key> implements Iterable<Key> {
     }
 
     //Merges two root lists together
-    private Node meld(Node x, Node y) {
+    private synchronized Node meld(Node x, Node y) {
         if (x == null) return y;
         if (y == null) return x;
         x.prev.next = y.next;
